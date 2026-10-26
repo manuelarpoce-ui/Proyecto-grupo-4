@@ -1,7 +1,7 @@
 # Acuerdos del equipo – Grupo 4
 
 ## Horarios de reunión
-- Martes y jueves de 7:00 a 8:00 p.m.
+- Martes y jueves de 7:00 a 9:00 p.m.
 
 ## Canal de comunicación
 - Grupo de WhatsApp para avisos rápidos; Zoom para reuniones.
