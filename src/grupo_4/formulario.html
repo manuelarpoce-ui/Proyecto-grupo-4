@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consulta de riesgo de crédito · Grupo 4</title>
+<style>
+  :root {
+    --fondo: #F5F6F8; --tarjeta: #FFFFFF; --texto: #1F2A33; --suave: #5B6770;
+    --borde: #D9DEE3; --acento: #1F5F8B; --acento-osc: #174A6C;
+    --bajo: #2E7D5B; --bajo-f: #E3F2EA; --medio: #B26A00; --medio-f: #FDF0DC;
+    --alto: #B3261E; --alto-f: #FBE4E2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: var(--fondo); color: var(--texto); line-height: 1.45; }
+  header { background: var(--acento); color: #fff; padding: 22px 24px; }
+  header h1 { margin: 0; font-size: 1.45rem; font-weight: 600; }
+  header p { margin: 4px 0 0; opacity: .9; font-size: .95rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .tarjeta h2 { margin: 0 0 4px; font-size: 1.05rem; }
+  .tarjeta .ayuda { margin: 0 0 16px; color: var(--suave); font-size: .88rem; }
+  .rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 5px; }
+  input, select { width: 100%; padding: 9px 10px; border: 1px solid var(--borde); border-radius: 6px; font-size: .95rem; background: #fff; color: var(--texto); font-family: inherit; }
+  input:focus, select:focus { outline: 2px solid var(--acento); outline-offset: 1px; border-color: var(--acento); }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th { text-align: left; font-size: .8rem; color: var(--suave); font-weight: 600; padding: 0 6px 8px; }
+  td { padding: 4px 6px; }
+  td:first-child { font-weight: 600; white-space: nowrap; width: 95px; }
+  td:nth-child(2) { width: 42%; }
+  .ejemplos { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  button { font-family: inherit; font-size: .95rem; border-radius: 6px; cursor: pointer; padding: 10px 16px; }
+  .secundario { background: #fff; border: 1px solid var(--borde); color: var(--texto); }
+  .secundario:hover { border-color: var(--acento); color: var(--acento); }
+  .principal { width: 100%; background: var(--acento); color: #fff; border: none; font-weight: 600; padding: 13px; font-size: 1rem; }
+  .principal:hover { background: var(--acento-osc); }
+  .principal:disabled { opacity: .6; cursor: wait; }
+  aside { position: sticky; top: 16px; }
+  .vacio { color: var(--suave); text-align: center; padding: 30px 10px; }
+  .porcentaje { font-size: 3rem; font-weight: 700; margin: 4px 0 2px; }
+  .barra { height: 12px; background: #E8EBEE; border-radius: 6px; overflow: hidden; position: relative; margin: 10px 0 4px; }
+  .barra span { display: block; height: 100%; border-radius: 6px; transition: width .4s; }
+  .escala { display: flex; justify-content: space-between; font-size: .75rem; color: var(--suave); }
+  .banda { display: inline-block; font-weight: 700; padding: 6px 14px; border-radius: 20px; margin: 14px 0 10px; }
+  .dato { border-top: 1px solid var(--borde); padding: 10px 0; font-size: .92rem; }
+  .dato b { display: block; font-size: .78rem; color: var(--suave); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .error { background: var(--alto-f); color: var(--alto); border-radius: 6px; padding: 12px; font-size: .9rem; }
+  .nota { font-size: .78rem; color: var(--suave); margin-top: 12px; }
+  footer { text-align: center; font-size: .8rem; color: var(--suave); padding-bottom: 24px; }
+  footer a { color: var(--acento); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Consulta de riesgo de incumplimiento</h1>
+  <p>Ingrese los datos del cliente para estimar la probabilidad de que no pague su tarjeta de crédito el próximo mes.</p>
+</header>
+
+<main>
+  <form id="formulario" novalidate>
+    <div class="ejemplos">
+      <button type="button" class="secundario" data-ejemplo="riesgoso">Cargar ejemplo: cliente con retrasos</button>
+      <button type="button" class="secundario" data-ejemplo="confiable">Cargar ejemplo: cliente cumplido</button>
+      <button type="button" class="secundario" data-ejemplo="limpiar">Limpiar</button>
+    </div>
+
+    <section class="tarjeta">
+      <h2>1. Datos del cliente</h2>
+      <p class="ayuda">Información personal y cupo asignado.</p>
+      <div class="rejilla">
+        <div><label for="SEX">Sexo</label>
+          <select id="SEX" required><option value="">Seleccione…</option><option value="2">Femenino</option><option value="1">Masculino</option></select></div>
+        <div><label for="AGE">Edad (años)</label><input id="AGE" type="number" min="18" max="100" required></div>
+        <div><label for="EDUCATION">Nivel educativo</label>
+          <select id="EDUCATION" required><option value="">Seleccione…</option><option value="1">Posgrado</option><option value="2">Universitario</option><option value="3">Secundaria</option><option value="4">Otro</option></select></div>
+        <div><label for="MARRIAGE">Estado civil</label>
+          <select id="MARRIAGE" required><option value="">Seleccione…</option><option value="1">Casado(a)</option><option value="2">Soltero(a)</option><option value="3">Otro</option></select></div>
+        <div><label for="LIMIT_BAL">Cupo de crédito asignado</label><input id="LIMIT_BAL" type="number" min="1" step="any" required></div>
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <h2>2. Historial de los últimos 6 meses</h2>
+      <p class="ayuda">Empiece por el mes más reciente. Si el saldo facturado fue a favor del cliente, escríbalo con signo menos.</p>
+      <table>
+        <thead><tr><th>Mes</th><th>Estado del pago</th><th>Valor facturado</th><th>Valor pagado</th></tr></thead>
+        <tbody id="historial"></tbody>
+      </table>
+    </section>
+
+    <button type="submit" class="principal" id="consultar">Calcular riesgo</button>
+  </form>
+
+  <aside>
+    <section class="tarjeta" id="resultado" aria-live="polite">
+      <h2>Resultado</h2>
+      <div class="vacio">Complete el formulario y presione <b>Calcular riesgo</b>.<br><br>También puede cargar uno de los ejemplos.</div>
+    </section>
+  </aside>
+</main>
+
+<footer>Proyecto Grupo 4 · Universidad de Medellín · Modelo de regresión logística entrenado con el dataset <i>Default of Credit Card Clients</i> (UCI).<br>
+Vista técnica de la API: <a href="/docs">/docs</a></footer>
+
+<script>
+const MESES = [
+  ["Septiembre", "PAY_0", "BILL_AMT1", "PAY_AMT1"],
+  ["Agosto",     "PAY_2", "BILL_AMT2", "PAY_AMT2"],
+  ["Julio",      "PAY_3", "BILL_AMT3", "PAY_AMT3"],
+  ["Junio",      "PAY_4", "BILL_AMT4", "PAY_AMT4"],
+  ["Mayo",       "PAY_5", "BILL_AMT5", "PAY_AMT5"],
+  ["Abril",      "PAY_6", "BILL_AMT6", "PAY_AMT6"],
+];
+const ESTADOS = [
+  [-2, "Sin consumo en el mes"], [-1, "Pagó el total a tiempo"], [0, "Pagó solo el mínimo"],
+  [1, "1 mes de retraso"], [2, "2 meses de retraso"], [3, "3 meses de retraso"], [4, "4 meses de retraso"],
+  [5, "5 meses de retraso"], [6, "6 meses de retraso"], [7, "7 meses de retraso"], [8, "8 meses o más de retraso"],
+];
+const NOMBRES = {
+  SEX: "Sexo", AGE: "Edad", EDUCATION: "Nivel educativo", MARRIAGE: "Estado civil", LIMIT_BAL: "Cupo de crédito",
+};
+MESES.forEach(([mes, pay, bill, amt]) => {
+  NOMBRES[pay] = `Estado del pago (${mes})`; NOMBRES[bill] = `Valor facturado (${mes})`; NOMBRES[amt] = `Valor pagado (${mes})`;
+});
+
+// Construir la tabla del historial
+const cuerpo = document.getElementById("historial");
+const opciones = ESTADOS.map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+MESES.forEach(([mes, pay, bill, amt]) => {
+  cuerpo.insertAdjacentHTML("beforeend", `<tr>
+    <td>${mes}</td>
+    <td><select id="${pay}" aria-label="Estado del pago en ${mes}" required><option value="">Seleccione…</option>${opciones}</select></td>
+    <td><input id="${bill}" type="number" step="any" aria-label="Valor facturado en ${mes}" required></td>
+    <td><input id="${amt}" type="number" min="0" step="any" aria-label="Valor pagado en ${mes}" required></td>
+  </tr>`);
+});
+
+const EJEMPLOS = {
+  riesgoso: { SEX: 2, AGE: 35, EDUCATION: 2, MARRIAGE: 1, LIMIT_BAL: 50000,
+    PAY_0: 2, PAY_2: 2, PAY_3: 0, PAY_4: 0, PAY_5: 0, PAY_6: 0,
+    BILL_AMT1: 48000, BILL_AMT2: 47000, BILL_AMT3: 45000, BILL_AMT4: 40000, BILL_AMT5: 38000, BILL_AMT6: 36000,
+    PAY_AMT1: 0, PAY_AMT2: 1500, PAY_AMT3: 1800, PAY_AMT4: 1500, PAY_AMT5: 1400, PAY_AMT6: 1300 },
+  confiable: { SEX: 2, AGE: 40, EDUCATION: 1, MARRIAGE: 1, LIMIT_BAL: 300000,
+    PAY_0: -1, PAY_2: -1, PAY_3: -1, PAY_4: -1, PAY_5: -1, PAY_6: -1,
+    BILL_AMT1: 20000, BILL_AMT2: 18000, BILL_AMT3: 22000, BILL_AMT4: 15000, BILL_AMT5: 17000, BILL_AMT6: 16000,
+    PAY_AMT1: 20000, PAY_AMT2: 18000, PAY_AMT3: 22000, PAY_AMT4: 15000, PAY_AMT5: 17000, PAY_AMT6: 16000 },
+};
+const CAMPOS = Object.keys(EJEMPLOS.riesgoso);
+const resultado = document.getElementById("resultado");
+const VACIO = resultado.innerHTML;
+
+document.querySelectorAll("[data-ejemplo]").forEach(boton => boton.addEventListener("click", () => {
+  const ejemplo = EJEMPLOS[boton.dataset.ejemplo];
+  CAMPOS.forEach(c => { document.getElementById(c).value = ejemplo ? ejemplo[c] : ""; });
+  resultado.innerHTML = VACIO;
+}));
+
+const pesos = n => Number(n).toLocaleString("es-CO", { maximumFractionDigits: 0 });
+
+function mostrarError(mensaje) {
+  resultado.innerHTML = `<h2>Resultado</h2><div class="error">${mensaje}</div>`;
+}
+
+document.getElementById("formulario").addEventListener("submit", async evento => {
+  evento.preventDefault();
+  const datos = {}, faltantes = [];
+  CAMPOS.forEach(c => {
+    const valor = document.getElementById(c).value;
+    if (valor === "") faltantes.push(NOMBRES[c]); else datos[c] = Number(valor);
+  });
+  if (faltantes.length) {
+    mostrarError(`<b>Faltan datos por completar:</b><br>• ${faltantes.join("<br>• ")}`);
+    return;
+  }
+
+  const boton = document.getElementById("consultar");
+  boton.disabled = true; boton.textContent = "Calculando…";
+  try {
+    const respuesta = await fetch("/predecir", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(datos),
+    });
+    const r = await respuesta.json();
+    if (!respuesta.ok) {
+      const detalle = Array.isArray(r.detail)
+        ? r.detail.map(d => `• ${NOMBRES[d.loc[d.loc.length - 1]] || d.loc.join(".")}: valor no válido`).join("<br>")
+        : (r.detail || "Error desconocido");
+      mostrarError(`<b>Revise los datos:</b><br>${detalle}`);
+      return;
+    }
+    const tono = { Bajo: "bajo", Medio: "medio", Alto: "alto" }[r.banda_riesgo];
+    const pct = r.probabilidad_incumplimiento * 100;
+    resultado.innerHTML = `
+      <h2>Resultado</h2>
+      <div style="color:var(--suave);font-size:.85rem">Probabilidad de incumplimiento</div>
+      <div class="porcentaje" style="color:var(--${tono})">${pct.toFixed(1).replace(".", ",")} %</div>
+      <div class="barra"><span style="width:${Math.min(pct, 100)}%;background:var(--${tono})"></span></div>
+      <div class="escala"><span>0 %</span><span>20 %</span><span>50 %</span><span>100 %</span></div>
+      <div class="banda" style="color:var(--${tono});background:var(--${tono}-f)">Riesgo ${r.banda_riesgo.toLowerCase()}</div>
+      <div class="dato"><b>Decisión del modelo</b>${r.interpretacion} (se alerta desde ${Math.round(r.umbral * 100)} % de probabilidad)</div>
+      <div class="dato"><b>Acción sugerida</b>${r.accion_sugerida}</div>
+      <div class="dato"><b>Resumen del cliente</b>Cupo de ${pesos(datos.LIMIT_BAL)} · último saldo facturado ${pesos(datos.BILL_AMT1)} · último pago ${pesos(datos.PAY_AMT1)}</div>
+      <p class="nota">Herramienta de apoyo para priorizar la gestión. No reemplaza el análisis del área de crédito.</p>`;
+  } catch (e) {
+    mostrarError("No fue posible conectarse con la API. Verifique que el servidor esté encendido.");
+  } finally {
+    boton.disabled = false; boton.textContent = "Calcular riesgo";
+  }
+});
+</script>
+</body>
+</html>
