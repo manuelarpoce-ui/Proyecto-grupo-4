@@ -5,9 +5,19 @@ build/
 dist/
 wheels/
 *.egg-info
+.pytest_cache/
+.ipynb_checkpoints/
 
 # Virtual environments
 .venv
 
+# Variables de entorno y secretos
+.env
+
+# Datos procesados (se regeneran con grupo_4.limpieza)
 data/processed/*
 !data/processed/.gitkeep
+
+# Modelos entrenados (se regeneran con: uv run python -m grupo_4.guardar_modelo)
+models/*
+!models/.gitkeep

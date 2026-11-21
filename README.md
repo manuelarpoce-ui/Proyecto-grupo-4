@@ -165,13 +165,15 @@ El proyecto se desarrolla siguiendo las siguientes etapas:
 
 ### 7. Modelos desarrollados
 
-Se compararon tres alternativas:
+Se compararon tres alternativas con los mismos datos de entrenamiento (24.000 clientes) y de prueba (6.000 clientes):
 
-- Modelo base (Baseline).
-- Regresión logística.
-- Árbol de decisión.
+| Modelo | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|---|---:|---:|---:|---:|---:|
+| Modelo base (*Baseline*: siempre "no incumple") | 0,7788 | 0,0000 | 0,0000 | 0,0000 | — |
+| Regresión logística | 0,8168 | 0,6619 | 0,3512 | 0,4589 | 0,7580 |
+| Árbol de decisión | 0,8165 | 0,6794 | 0,3225 | 0,4374 | 0,7402 |
 
-La comparación permite identificar cuál ofrece el mejor equilibrio entre las métricas de desempeño y las necesidades del negocio.
+La comparación permite identificar cuál ofrece el mejor equilibrio entre las métricas de desempeño y las necesidades del negocio. Se eligió la **regresión logística**, que supera al *baseline* y al árbol en recall, F1 y ROC-AUC. El detalle está en [`docs/05_modelado.md`](docs/05_modelado.md).
 
 ### 8. Resultados obtenidos
 
@@ -198,6 +200,8 @@ Con este ajuste se obtuvieron los siguientes resultados:
 
 El ajuste permitió aumentar la capacidad de identificación de clientes con incumplimiento, aunque también incrementó la cantidad de clientes clasificados incorrectamente como posibles incumplidores.
 
+Los hallazgos del EDA están en [`docs/04_eda.md`](docs/04_eda.md); las decisiones de limpieza, en [`docs/03_decisiones_limpieza.md`](docs/03_decisiones_limpieza.md), y los KPIs y el *project charter*, en [`docs/01_problema_y_kpis.md`](docs/01_problema_y_kpis.md) y [`docs/02_project_charter.md`](docs/02_project_charter.md).
+
 ### 9. Enfoque de negocio y aplicación
 
 Desde la perspectiva de una entidad financiera, los resultados pueden servir como herramienta de apoyo para la gestión del riesgo crediticio.
@@ -209,36 +213,101 @@ La identificación de clientes con mayor probabilidad de incumplimiento podría 
 - Apoyar estrategias de comunicación y gestión preventiva.
 - Mejorar el análisis de las decisiones relacionadas con el crédito.
 
+Con los supuestos financieros del notebook 05 (pérdida del 60 % del saldo por cada incumplimiento no detectado y 10 % de margen perdido por cada falsa alarma), la política de menor costo reduce la pérdida estimada en un **53,3 %** frente a no usar modelo. Además, las bandas de riesgo media y alta reúnen el **58,7 % de los incumplidos revisando solo el 28,7 % de la cartera**.
+
+| Banda | Probabilidad de incumplimiento | Acción sugerida |
+|---|---|---|
+| Bajo | < 20 % | Mantener condiciones; candidato a aumento de cupo |
+| Medio | 20 % – 50 % | Seguimiento y recordatorios de pago; no aumentar cupo |
+| Alto | ≥ 50 % | Gestión preventiva de cobranza; revisar o congelar cupo |
+
 El modelo debe utilizarse como herramienta de apoyo y no como único criterio para tomar decisiones sobre los clientes.
 
-### 10. Estructura del repositorio
+### 10. Límites del modelo
 
-El proyecto se organiza en carpetas que permiten separar la información original, los datos procesados, los análisis, el código fuente, los modelos y la documentación.
+- **Datos antiguos y de otro país:** corresponden a clientes de Taiwán en 2005. El comportamiento de pago cambia con el país y el ciclo económico, así que el modelo debe reentrenarse con datos propios antes de usarse.
+- **Precisión moderada:** con el umbral de 0,20, de cada 100 clientes señalados como posibles incumplidores, unos 45 incumplen realmente. Por eso se recomienda usarlo para priorizar la gestión, no para rechazar clientes.
+- **Incumplimientos difíciles de detectar:** el 98 % de los incumplidos que el modelo no detecta no tenía retraso en el último mes, así que su historial no daba señales.
+- **Supuestos financieros:** la pérdida por incumplimiento (60 %) y el margen (10 %) son supuestos de trabajo; la base no incluye recuperaciones ni rentabilidad reales. El umbral óptimo cambia entre 0,02 y 0,33 según esos supuestos.
+- **Atributos sensibles:** el modelo usa sexo, estado civil y edad. Falta revisar si su desempeño es equitativo entre grupos.
+- **Alcance del modelado:** no se usaron validación cruzada ni búsqueda de hiperparámetros, y las variables derivadas del EDA (meses con retraso, utilización del cupo, proporción pagada) aún no se incluyen como predictores.
 
-- `data/`: almacenamiento de los datos originales y procesados.
-- `notebooks/`: desarrollo de los análisis y experimentos.
-- `src/`: código fuente reutilizable.
-- `models/`: almacenamiento y documentación de los modelos.
-- `reports/`: resultados, gráficos e informes.
-- `docs/`: documentación y acuerdos del equipo.
+### 11. Estructura del repositorio
 
-### 11. Instalación y ejecución
+```
+Proyecto-grupo-4/
+├── README.md
+├── pyproject.toml          ← dependencias del proyecto (uv)
+├── uv.lock                 ← versiones exactas
+├── data/
+│   ├── raw/                ← datos originales de UCI (no se modifican)
+│   └── processed/          ← base limpia generada por el código (ignorada por git)
+├── docs/
+│   ├── 00_acuerdos_equipo.md
+│   ├── 01_problema_y_kpis.md
+│   ├── 02_project_charter.md
+│   ├── 03_decisiones_limpieza.md
+│   ├── 04_eda.md
+│   └── 05_modelado.md
+├── notebooks/
+│   ├── 01_eda.ipynb              ← análisis exploratorio y hallazgos
+│   ├── 02_procesamiento.ipynb    ← preparación de variables
+│   ├── 03_modelamiento.ipynb     ← baseline, regresión logística y árbol
+│   ├── 04_evaluacion.ipynb       ← métricas, umbral y sobreajuste
+│   └── 05_impacto_negocio.ipynb  ← costos, umbral óptimo y bandas de riesgo
+├── src/grupo_4/
+│   ├── limpieza.py          ← carga, limpia, valida y guarda la base
+│   ├── preprocesamiento.py  ← ColumnTransformer (escalado + one-hot)
+│   ├── entrenamiento.py     ← división de datos y Pipelines de los modelos
+│   ├── evaluacion.py        ← métricas y comparación de umbrales
+│   ├── guardar_modelo.py    ← entrena el modelo final y lo guarda en models/
+│   ├── prediccion.py        ← carga el modelo y calcula el riesgo de un cliente
+│   ├── api.py               ← API con FastAPI
+│   └── formulario.html      ← formulario web de la API
+├── models/                  ← modelo entrenado (ignorado por git; se regenera)
+└── tests/                   ← pruebas con pytest
+```
+
+### 12. Instalación y ejecución
 
 El proyecto utiliza UV para administrar las dependencias del entorno de trabajo.
 
-**Sincronizar las dependencias:**
+**1. Sincronizar las dependencias:**
 
 ```bash
 uv sync
 ```
 
-**Iniciar JupyterLab:**
+**2. Entrenar y guardar el modelo** (crea `models/modelo_logistico.joblib`; es necesario antes de iniciar la API):
+
+```bash
+uv run python -m grupo_4.guardar_modelo
+```
+
+**3. Iniciar la API:**
+
+```bash
+uv run uvicorn grupo_4.api:app --reload
+```
+
+- Formulario para consultar un cliente: http://127.0.0.1:8000/
+- Documentación técnica de la API: http://127.0.0.1:8000/docs
+- `GET /estado`: verifica que la API esté funcionando.
+- `POST /predecir`: recibe los datos de un cliente y devuelve la probabilidad de incumplimiento, la predicción, la banda de riesgo y la acción sugerida.
+
+**4. Correr las pruebas:**
+
+```bash
+uv run pytest
+```
+
+**5. Abrir los notebooks:**
 
 ```bash
 uv run jupyter lab
 ```
 
-### 12. Conclusión general
+### 13. Conclusión general
 
 Este proyecto permite explorar cómo las técnicas de aprendizaje automático pueden contribuir a la identificación del riesgo de incumplimiento en clientes de tarjetas de crédito.
 

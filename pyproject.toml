@@ -1,7 +1,7 @@
 [project]
 name = "grupo-4"
 version = "0.1.0"
-description = "Add your description here"
+description = "Predicción del incumplimiento de pago de clientes de tarjetas de crédito (UCI) con un modelo de clasificación y una API en FastAPI."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -26,6 +26,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=9.1.1",
     "ruff>=0.17.1",
 ]
