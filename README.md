@@ -245,10 +245,12 @@ Proyecto-grupo-4/
 ├── docs/
 │   ├── 00_acuerdos_equipo.md
 │   ├── 01_problema_y_kpis.md
+│   ├── 02_perfil_inicial.md
 │   ├── 02_project_charter.md
 │   ├── 03_decisiones_limpieza.md
 │   ├── 04_eda.md
-│   └── 05_modelado.md
+│   ├── 05_modelado.md
+│   └── 06_pipeline.md
 ├── notebooks/
 │   ├── 01_eda.ipynb              ← análisis exploratorio y hallazgos
 │   ├── 02_procesamiento.ipynb    ← preparación de variables
