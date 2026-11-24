@@ -84,12 +84,14 @@ def formulario():
 
 
 @app.get("/estado")
+@app.get("/health")
 def estado():
     """Verifica que la API esté funcionando."""
     return {"estado": "ok", "modelo": "Regresión logística", "umbral": paquete["umbral"]}
 
 
 @app.post("/predecir")
+@app.post("/predict")
 def predecir(cliente: Cliente):
     """Recibe los datos de un cliente y devuelve su nivel de riesgo."""
     try:

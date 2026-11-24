@@ -255,6 +255,11 @@ Proyecto-grupo-4/
 │   ├── 03_modelamiento.ipynb     ← baseline, regresión logística y árbol
 │   ├── 04_evaluacion.ipynb       ← métricas, umbral y sobreajuste
 │   └── 05_impacto_negocio.ipynb  ← costos, umbral óptimo y bandas de riesgo
+├── api/
+│   └── main.py              ← punto de entrada de la API (usa src/grupo_4/api.py)
+├── src/
+│   ├── limpieza.py          ← atajo a grupo_4/limpieza.py
+│   └── train.py             ← atajo: reentrena el modelo (uv run python -m src.train)
 ├── src/grupo_4/
 │   ├── limpieza.py          ← carga, limpia, valida y guarda la base
 │   ├── preprocesamiento.py  ← ColumnTransformer (escalado + one-hot)
@@ -281,19 +286,19 @@ uv sync
 **2. Entrenar y guardar el modelo** (crea `models/modelo_logistico.joblib`; es necesario antes de iniciar la API):
 
 ```bash
-uv run python -m grupo_4.guardar_modelo
+uv run python -m src.train
 ```
 
 **3. Iniciar la API:**
 
 ```bash
-uv run uvicorn grupo_4.api:app --reload
+uv run uvicorn api.main:app --reload
 ```
 
 - Formulario para consultar un cliente: http://127.0.0.1:8000/
 - Documentación técnica de la API: http://127.0.0.1:8000/docs
-- `GET /estado`: verifica que la API esté funcionando.
-- `POST /predecir`: recibe los datos de un cliente y devuelve la probabilidad de incumplimiento, la predicción, la banda de riesgo y la acción sugerida.
+- `GET /health` (o `GET /estado`): verifica que la API esté funcionando.
+- `POST /predict` (o `POST /predecir`): recibe los datos de un cliente y devuelve la probabilidad de incumplimiento, la predicción, la banda de riesgo y la acción sugerida.
 
 **4. Correr las pruebas:**
 
